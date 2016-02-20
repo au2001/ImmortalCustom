@@ -1,0 +1,140 @@
+name: ImmortalCustom
+main: me.au2001.ImmortalCustom.ImmortalCustom
+version: 1.5.0
+description: Enchant fortune at the level you want and smelts your ores!
+softdepend: [WorldEdit, WorldGuard, EZBlocks]
+commands: 
+  fortune:
+    description: Main command for ImmortalCustom.
+    aliases: [ic, immortal, immortalcustom, icustom]
+
+  fortune update:
+    description: Checks and updates ImmortalCustom.
+    permission: ImmortalCustom.update
+
+  fortune enchant:
+    description: Enchants the item you hold with fortune.
+    permission: ImmortalCustom.enchant
+
+  fortune reload:
+    description: Reloads the configuration.
+    permission: ImmortalCustom.reload
+    
+  fortune help:
+    description: Gives you a list of commands you have access to.
+    
+  fortune override:
+    description: Allows ImmortalCustom in a WE area.
+    permission: ImmortalCustom.override
+
+  fortune fullmessage:
+    description: Changes the full message.
+    permission: ImmortalCustom.fullmessage
+
+  fortune orestoblocks on:
+    description: Turns on the orestoblocks.
+    permission: ImmortalCustom.orestoblocks.on
+
+  fortune orestoblocks off:
+    description: Turns off the orestoblocks.
+    permission: ImmortalCustom.orestoblocks.off
+    
+  fortune orestoblocks flames on:
+    description: Turns on the flames when smelting.
+    permission: ImmortalCustom.flames.on
+
+  fortune orestoblocks flames off:
+    description: Turns off the flames when smelting.
+    permission: ImmortalCustom.flames.off
+
+  fortune pickuplist add:
+    description: Adds the block you are holding to the pickuplist.
+    permission: ImmortalCustom.pickuplist.add
+
+  fortune pickuplist remove:
+    description: Removes the block you are holding from the pickuplist.
+    permission: ImmortalCustom.pickuplist.remove
+
+  fortune pickuplist on:
+    description: Turns ON the whitelist for autopickup.
+    permission: ImmortalCustom.pickuplist.on
+
+  fortune pickuplist off:
+    description: Turns OFF the whitelist for autopickup.
+    permission: ImmortalCustom.pickuplist.off
+
+  fortune fortunelist add:
+    description: Adds the block you are holding to the fortunelist.
+    permission: ImmortalCustom.fortunelist.add
+
+  fortune fortunelist remove:
+    description: Removes the block you are holding from the fortunelist.
+    permission: ImmortalCustom.fortunelist.remove
+
+  fortune fortunelist on:
+    description: Turns ON the whitelist for fortune.
+    permission: ImmortalCustom.fortunelist.on
+
+  fortune fortunelist off:
+    description: Turns OFF the whitelist for fortune.
+    permission: ImmortalCustom.fortunelist.off
+
+  fortune difference:
+    description: Changes the maximum difference for randomizer.
+    permission: ImmortalCustom.difference
+
+  fortune multiplier:
+    description: Changes the multiplier for loots.
+    permission: ImmortalCustom.multiplier
+
+  fortune autopickup on:
+    description: Turns the AutoPickup ON.
+    permission: ImmortalCustom.autopickup.on
+
+  fortune autopickup off:
+    description: Turns the AutoPickup OFF.
+    permission: ImmortalCustom.autopickup.off
+
+  fortune dropdown on:
+    description: Turns the drop downs ON.
+    permission: ImmortalCustom.dropdown.on
+
+  fortune dropdown off:
+    description: Turns the drop downs OFF.
+    permission: ImmortalCustom.dropdown.off
+
+  fortune smeltFortune:
+    description: Changes the minimum fortune for autosmelt.
+    permission: ImmortalCustom.smeltFortune
+
+  fortune worlds add:
+    description: Adds the world you are in to the disabled worlds.
+    permission: ImmortalCustom.worlds.add
+
+  fortune worlds remove:
+    description: Removes the world you are in from the disabled worlds.
+    permission: ImmortalCustom.worlds.remove
+
+  fortune minebow:
+    description: Gives a minebow to the specified player.
+    permission: ImmortalCustom.minebow
+
+  fortune minearrow:
+    description: Gives a minearrow to the specified player.
+    permission: ImmortalCustom.minearrow
+    
+  fortune backpack:
+    description: View a list of your backpacks.
+    permission: ImmortalCustom.backpack.list
+    
+  fortune backpack open:
+    description: Opens a specific backpack.
+    permission: ImmortalCustom.backpack.open
+    
+  fortune backpack give:
+    description: Gives a player a backpack.
+    permission: ImmortalCustom.backpack.give
+    
+  fortune backpack take:
+    description: Remove a player's backpack and destroy it's content.
+    permission: ImmortalCustom.backpack.take
