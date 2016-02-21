@@ -2,6 +2,8 @@ package me.au2001.ImmortalCustom;
 
 import java.util.ArrayList;
 
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -29,7 +31,11 @@ public abstract class ICBlockBreakListener {
 		ArrayList<ItemStack> drops = new ArrayList<ItemStack>();
 		
 		public ICBlockBreakEvent (BlockBreakEvent event) {
-			super(event.getBlock(), event.getPlayer());
+			this(event.getBlock(), event.getPlayer());
+		}
+		
+		public ICBlockBreakEvent (Block block, Player player) {
+			super(block, player);
 		}
 		
 		public boolean isTool () { return tool; }

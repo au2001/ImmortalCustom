@@ -17,7 +17,7 @@ autopickup: true
 
 # The autoupdater for ImmortalCustom
 autoupdater:
-  enabled: true # Enable or not the autoupdater for ImmortalCustom
+  enabled: true # Enable or not the autoupdater for ImmortalCustomEt tu peux le vendre sur Spigot ça peut rapporter 
   # If it is disabled, it can still be used manually with /fortune update
   download: false # Whether it should download the plugin when an update is available.
   delay: -1 # The delay, in seconds, between each update check.
@@ -71,8 +71,8 @@ blocksbrokenactionbar: true
 # NOTE: If you change this, all the pickaxes already used will be broken
 blocksbrokenitemname: '&9 | Broken: &b'
 
-# The message when a player doesn't have the permissions
-permission: '&cYou do not have the permissions to execute this command!'
+# The message when a player doesn't have permission for a command/action
+permission: '&cYou do not have the permissions to use this!'
 
 # The sound played when a player's inventory is full
 fullsound: 'NOTE_BASS_GUITAR 10 10'
@@ -167,6 +167,7 @@ multipliers:
   Owner: 5
 
 # The different available backpack tiers.
+# Permission for autopickup into backpacks: ImmortalCustom.backpack.autopickup
 backpacks:
   start:
     title: '&7Fabric&fBackpack'

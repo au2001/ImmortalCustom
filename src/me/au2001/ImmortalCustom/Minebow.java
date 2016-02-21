@@ -64,9 +64,15 @@ public class Minebow implements Listener {
 				String name = bow.getItemMeta().getDisplayName();
 				if (meta.hasDisplayName() && meta.getDisplayName().startsWith(name.split("\\{ARROWS}")[0])) {
 					if (meta.getDisplayName().endsWith(name.split("\\{ARROWS}")[1])) {
-						updateBows((Player) event.getEntity(), -1);
-						MetadataValue value = new FixedMetadataValue(ImmortalCustom.plugin, true);
-						event.getProjectile().setMetadata("MineBow-Arrow", value);
+						if (event.getEntity().hasPermission("ImmortalCustom.minebow.use") || event.getEntity().hasPermission("ic.minebow.use")) {
+							updateBows((Player) event.getEntity(), -1);
+							MetadataValue value = new FixedMetadataValue(ImmortalCustom.plugin, true);
+							event.getProjectile().setMetadata("MineBow-Arrow", value);
+						} else {
+							event.setCancelled(true);
+							String msg = ImmortalCustom.plugin.getConfig().getString("permission");
+							event.getEntity().sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
+						}
 					}
 				}
 			}

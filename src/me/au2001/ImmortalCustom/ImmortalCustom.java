@@ -314,8 +314,12 @@ public class ImmortalCustom extends JavaPlugin implements Listener {
 								icevent.autopickup = true;
 								Collection<ItemStack> dropp = event.getPlayer().getInventory().addItem(drop).values();
 								List<ItemStack> rest = new ArrayList<ItemStack>();
-								for (ItemStack item : dropp) rest.add(Backpacks.giveItem(event.getPlayer().getUniqueId(), item));
-								rest.remove(null);
+								if (event.getPlayer().hasPermission("ImmortalCustom.backpack.autopickup") || event.getPlayer().hasPermission("ic.backpack.autopickup")) {
+									for (ItemStack item : dropp) rest.add(Backpacks.giveItem(event.getPlayer().getUniqueId(), item));
+									rest.remove(null);
+								} else {
+									rest.addAll(dropp);
+								}
 								if (rest != null && !rest.isEmpty()) {
 									icevent.full = true;
 									String[] conf = config.getString("fullsound").split(" ");
