@@ -13,6 +13,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
@@ -35,8 +36,8 @@ public class Commands implements CommandExecutor {
 		} else if (args.length >= 2 && args[0].equalsIgnoreCase("enchant")) {
 			if (sender instanceof Player) {
 				if (sender.hasPermission("ImmortalCustom.enchant") || sender.hasPermission("ic.enchant")) {
-					Player player = (Player)sender;
-					ItemStack item = player.getItemInHand();
+					Player player = (Player) sender;
+					ItemStack item = getItemInHand(player);
 					try {
 						int level = Integer.parseInt(args[1]);
 						item.addUnsafeEnchantment(Enchantment.LOOT_BONUS_BLOCKS, level);
@@ -76,13 +77,13 @@ public class Commands implements CommandExecutor {
 			if (sender instanceof Player) {
 				if (args[1].equalsIgnoreCase("add")) {
 					if (sender.hasPermission("ImmortalCustom.fortunelist.add") || sender.hasPermission("ic.fortunelist.add")) {
-						if (!((Player) sender).getItemInHand().getType().equals(Material.AIR)) {
-							if (!ImmortalCustom.plugin.getConfig().getStringList("fortuneBlocks").contains(((Player) sender).getItemInHand().getType().toString())) {
+						if (!getItemInHand((Player) sender).getType().equals(Material.AIR)) {
+							if (!ImmortalCustom.plugin.getConfig().getStringList("fortuneBlocks").contains(getItemInHand((Player) sender).getType().toString())) {
 								List<String> list = ImmortalCustom.plugin.getConfig().getStringList("fortuneBlocks");
-								list.add(((Player) sender).getItemInHand().getType().toString());
+								list.add(getItemInHand((Player) sender).getType().toString());
 								ImmortalCustom.plugin.getConfig().set("fortuneBlocks", list);
 								ImmortalCustom.plugin.saveConfig();
-								sender.sendMessage(ChatColor.GREEN + "Successfully added " + ((Player) sender).getItemInHand().getType().toString() + " to the fortunelist.");
+								sender.sendMessage(ChatColor.GREEN + "Successfully added " + getItemInHand((Player) sender).getType().toString() + " to the fortunelist.");
 							} else {
 								sender.sendMessage(ChatColor.RED + "This block is already in the fortunelist.");
 							}
@@ -94,13 +95,13 @@ public class Commands implements CommandExecutor {
 					}
 				} else if (args[1].equalsIgnoreCase("remove")) {
 					if (sender.hasPermission("ImmortalCustom.fortunelist.remove") || sender.hasPermission("ic.fortunelist.remove")) {
-						if (!((Player) sender).getItemInHand().getType().equals(Material.AIR)) {
-							if (ImmortalCustom.plugin.getConfig().getStringList("fortuneBlocks").contains(((Player) sender).getItemInHand().getType().toString())) {
+						if (!getItemInHand((Player) sender).getType().equals(Material.AIR)) {
+							if (ImmortalCustom.plugin.getConfig().getStringList("fortuneBlocks").contains(getItemInHand((Player) sender).getType().toString())) {
 								List<String> list = ImmortalCustom.plugin.getConfig().getStringList("fortuneBlocks");
-								list.remove(((Player) sender).getItemInHand().getType().toString());
+								list.remove(getItemInHand((Player) sender).getType().toString());
 								ImmortalCustom.plugin.getConfig().set("fortuneBlocks", list);
 								ImmortalCustom.plugin.saveConfig();
-								sender.sendMessage(ChatColor.GREEN + "Successfully removed " + ((Player) sender).getItemInHand().getType().toString() + " from the fortunelist.");
+								sender.sendMessage(ChatColor.GREEN + "Successfully removed " + getItemInHand((Player) sender).getType().toString() + " from the fortunelist.");
 							} else {
 								sender.sendMessage(ChatColor.RED + "This block is not in the fortunelist.");
 							}
@@ -144,13 +145,13 @@ public class Commands implements CommandExecutor {
 			if (sender instanceof Player) {
 				if (args[1].equalsIgnoreCase("add")) {
 					if (sender.hasPermission("ImmortalCustom.pickuplist.add") || sender.hasPermission("ic.pickuplist.add")) {
-						if (!((Player) sender).getItemInHand().getType().equals(Material.AIR)) {
-							if (!ImmortalCustom.plugin.getConfig().getStringList("pickupBlocks").contains(((Player) sender).getItemInHand().getType().toString())) {
+						if (!getItemInHand((Player) sender).getType().equals(Material.AIR)) {
+							if (!ImmortalCustom.plugin.getConfig().getStringList("pickupBlocks").contains(getItemInHand((Player) sender).getType().toString())) {
 								List<String> list = ImmortalCustom.plugin.getConfig().getStringList("pickupBlocks");
-								list.add(((Player) sender).getItemInHand().getType().toString());
+								list.add(getItemInHand((Player) sender).getType().toString());
 								ImmortalCustom.plugin.getConfig().set("pickupBlocks", list);
 								ImmortalCustom.plugin.saveConfig();
-								sender.sendMessage(ChatColor.GREEN + "Successfully added " + ((Player) sender).getItemInHand().getType().toString() + " to the pickuplist.");
+								sender.sendMessage(ChatColor.GREEN + "Successfully added " + getItemInHand((Player) sender).getType().toString() + " to the pickuplist.");
 							} else {
 								sender.sendMessage(ChatColor.RED + "This block is already in the pickuplist.");
 							}
@@ -162,13 +163,13 @@ public class Commands implements CommandExecutor {
 					}
 				} else if (args[1].equalsIgnoreCase("remove")) {
 					if (sender.hasPermission("ImmortalCustom.pickuplist.remove") || sender.hasPermission("ic.pickuplist.remove")) {
-						if (!((Player) sender).getItemInHand().getType().equals(Material.AIR)) {
-							if (ImmortalCustom.plugin.getConfig().getStringList("pickupBlocks").contains(((Player) sender).getItemInHand().getType().toString())) {
+						if (!getItemInHand((Player) sender).getType().equals(Material.AIR)) {
+							if (ImmortalCustom.plugin.getConfig().getStringList("pickupBlocks").contains(getItemInHand((Player) sender).getType().toString())) {
 								List<String> list = ImmortalCustom.plugin.getConfig().getStringList("pickupBlocks");
-								list.remove(((Player) sender).getItemInHand().getType().toString());
+								list.remove(getItemInHand((Player) sender).getType().toString());
 								ImmortalCustom.plugin.getConfig().set("pickupBlocks", list);
 								ImmortalCustom.plugin.saveConfig();
-								sender.sendMessage(ChatColor.GREEN + "Successfully removed " + ((Player) sender).getItemInHand().getType().toString() + " from the pickuplist.");
+								sender.sendMessage(ChatColor.GREEN + "Successfully removed " + getItemInHand((Player) sender).getType().toString() + " from the pickuplist.");
 							} else {
 								sender.sendMessage(ChatColor.RED + "This block is not in the pickuplist.");
 							}
@@ -601,6 +602,23 @@ public class Commands implements CommandExecutor {
 			sender.sendMessage(ChatColor.RED + "Invalid command parameters! Use /help ImmortalCustom");
 		}
 		return false;
+	}
+
+	public static ItemStack getItemInHand (Player player) {
+		return getItemInHand(player.getInventory());
+	}
+
+	@SuppressWarnings("deprecation")
+	public static ItemStack getItemInHand (PlayerInventory inv) {
+		ItemStack item = null;
+		try {
+			if (inv.getClass().getMethod("getItemInMainHand") != null)
+				item = inv.getItemInMainHand();
+			else item = inv.getItemInHand();
+		} catch (Exception e) {
+			item = inv.getItemInHand();
+		}
+		return item;
 	}
 
 }

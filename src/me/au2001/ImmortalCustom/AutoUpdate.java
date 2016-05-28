@@ -20,32 +20,9 @@ public class AutoUpdate {
 		}
 
 		if (ImmortalCustom.plugin.getConfig().getBoolean("autoupdater.enabled", true)) {
-			if (ImmortalCustom.plugin.getConfig().getLong("autoupdater.delay") > -1) {
-				new BukkitRunnable () {
-					public void run() {
-						if (ImmortalCustom.plugin.isEnabled()) {
-							try {
-								if (check()) {
-									if (ImmortalCustom.plugin.getConfig().getBoolean("autoupdater.download", false)) {
-										broadcast("&6[&eImmortalCustom&6] &eAn update was found, downloading from URL...");
-										download();
-										broadcast("&6[&eImmortalCustom&6] &eDone! Please restart or reload for changes to take effect.");
-									} else {
-										broadcast("&6[&eImmortalCustom&6] &eAn update was found, please download it here:");
-										broadcast("&6&l> &e" + ImmortalCustom.plugin.getConfig().getString("autoupdater.url"));
-										broadcast("&6&l> &eOr use /fortune update to download it in-game.");
-									}
-								}
-							} catch (NullPointerException e) {
-								broadcast("&6[&eImmortalCustom&6] &cAn error occured while comparing versions.");
-								e.printStackTrace();
-							}
-						} else cancel();
-					}
-				}.runTaskTimerAsynchronously(ImmortalCustom.plugin, 0, ImmortalCustom.plugin.getConfig().getLong("autoupdater.delay"));
-			} else {
-				new BukkitRunnable() {
-					public void run() {
+			BukkitRunnable run = new BukkitRunnable () {
+				public void run() {
+					if (ImmortalCustom.plugin.isEnabled()) {
 						try {
 							if (check()) {
 								if (ImmortalCustom.plugin.getConfig().getBoolean("autoupdater.download", false)) {
@@ -57,15 +34,18 @@ public class AutoUpdate {
 									broadcast("&6&l> &e" + ImmortalCustom.plugin.getConfig().getString("autoupdater.url"));
 									broadcast("&6&l> &eOr use /fortune update to download it in-game.");
 								}
-
 							}
 						} catch (NullPointerException e) {
 							broadcast("&6[&eImmortalCustom&6] &cAn error occured while comparing versions.");
 							e.printStackTrace();
+							cancel();
 						}
-					}
-				}.runTaskAsynchronously(ImmortalCustom.plugin);
-			}
+					} else cancel();
+				}
+			}; 
+			if (ImmortalCustom.plugin.getConfig().getLong("autoupdater.delay") > -1)
+				run.runTaskTimerAsynchronously(ImmortalCustom.plugin, 0, ImmortalCustom.plugin.getConfig().getLong("autoupdater.delay"));
+			else run.runTaskAsynchronously(ImmortalCustom.plugin);
 		}
 	}
 

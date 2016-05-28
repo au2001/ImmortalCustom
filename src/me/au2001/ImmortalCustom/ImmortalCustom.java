@@ -2,11 +2,13 @@ package me.au2001.ImmortalCustom;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import me.au2001.ImmortalCustom.ICBlockBreakListener.ICBlockBreakEvent;
@@ -181,68 +183,64 @@ public class ImmortalCustom extends JavaPlugin implements Listener {
 					if (config.getBoolean("blocksbrokenlore", false)) {
 						icevent.onBlockBrokenUpdate();
 						if (icevent.isCancelled()) return true;
-						String before = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbroken"));
+						String brokenmsg = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbroken"));
 						if (meta.hasLore()) {
-							if (meta.getLore().get(0).matches(Pattern.quote(before) + "[0-9]+")) {
-								String number = meta.getLore().get(0).substring(before.length());
-								List<String> lores = meta.getLore();
-								lores.set(0, lores.get(0).replaceAll(number, "" + (Long.parseLong(number)+1)));
-								meta.setLore(lores);
-								if (config.getBoolean("blocksbrokenactionbar", false))
-									Utils.sendActionBar(event.getPlayer(), before + "" + (Long.parseLong(number)+1));
-								if (!config.getString("blocksbrokenitemname", "").isEmpty()) {
-									before = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbrokenitemname"));
-									if (meta.hasDisplayName()) {
-										if (meta.getDisplayName().matches(".*" + Pattern.quote(before) + "[0-9]+")) {
-											String name = meta.getDisplayName().substring(0, before.length());
-											meta.setDisplayName(name + before + (Long.parseLong(number)+1));
+							String[] parts = brokenmsg.split(Pattern.quote("{BLOCKS}"));
+							Pattern pattern = Pattern.compile(Pattern.quote(parts[0]) + "([0-9]+)" + (parts.length > 1? Pattern.quote(parts[1]) : ""));
+							for (int i = meta.getLore().size()-1; i >= 0; i--) {
+								Matcher finder = pattern.matcher(meta.getLore().get(i));
+								if (finder.find()) {
+									List<String> lores = meta.getLore();
+									long blocks = Long.parseLong(finder.group(1)) + 1;
+									lores.set(i, brokenmsg.replace("{BLOCKS}", "" + blocks));
+									meta.setLore(lores);
+									if (config.getBoolean("blocksbrokenactionbar", false)) Utils.sendActionBar(event.getPlayer(), lores.get(i));
+									if (!config.getString("blocksbrokenitemname", "").isEmpty()) {
+										String brokenname = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbrokenitemname"));
+										if (meta.hasDisplayName()) {
+											String[] nameparts = brokenname.split(Pattern.quote("{BLOCKS}"));
+											String namepattern = Pattern.quote(nameparts[0]) + "[0-9]+" + (nameparts.length > 1? Pattern.quote(nameparts[1]) : "");
+											Matcher match = Pattern.compile("(.*)" + namepattern).matcher(meta.getDisplayName());
+											if (match.find()) meta.setDisplayName(match.group(1) + brokenname.replace("{BLOCKS}", "" + blocks));
+											else meta.setDisplayName(meta.getDisplayName() + brokenname.replace("{BLOCKS}", "" + blocks));
 										} else {
-											meta.setDisplayName(meta.getDisplayName() + before + (Long.parseLong(number)+1));
+											String name = event.getPlayer().getItemInHand().getType().name().replace('_', ' ');
+											meta.setDisplayName(WordUtils.capitalizeFully(name) + brokenname.replace("{BLOCKS}", "" + blocks));
 										}
-									} else {
-										String name = event.getPlayer().getItemInHand().getType().name().replace('_', ' ');
-										meta.setDisplayName(WordUtils.capitalizeFully(name) + before + (Long.parseLong(number)+1));
 									}
-								}
-							} else {
-								List<String> lores = meta.getLore();
-								lores.add(0, before + "1");
-								meta.setLore(lores);
-								if (config.getBoolean("blocksbrokenactionbar", false))
-									Utils.sendActionBar(event.getPlayer(), before + 1);
-								if (!config.getString("blocksbrokenitemname", "").isEmpty()) {
-									before = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbrokenitemname"));
-									if (meta.hasDisplayName()) {
-										if (meta.getDisplayName().matches("(.*)" + Pattern.quote(before) + "[0-9]+")) {
-											String name = meta.getDisplayName().substring(0, before.length());
-											meta.setDisplayName(name + before + 1);
+									break;
+								} else if (i == 0) {
+									List<String> lores = meta.getLore();
+									lores.add(i, brokenmsg.replace("{BLOCKS}", "1"));
+									meta.setLore(lores);
+									if (config.getBoolean("blocksbrokenactionbar", false)) Utils.sendActionBar(event.getPlayer(), brokenmsg.replace("{BLOCKS}", "1"));
+									if (!config.getString("blocksbrokenitemname", "").isEmpty()) {
+										String brokenname = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbrokenitemname"));
+										if (meta.hasDisplayName()) {
+											String namepattern = Pattern.quote(brokenname).replace(Pattern.quote("{BLOCKS}"), "[0-9]+");
+											Matcher match = Pattern.compile("(.*)" + namepattern).matcher(meta.getDisplayName());
+											if (match.find()) meta.setDisplayName(match.group(1) + brokenname.replace("{BLOCKS}", "1"));
+											else meta.setDisplayName(meta.getDisplayName() + brokenname.replace("{BLOCKS}", "1"));
 										} else {
-											meta.setDisplayName(meta.getDisplayName() + before + 1);
+											String name = event.getPlayer().getItemInHand().getType().name().replace('_', ' ');
+											meta.setDisplayName(WordUtils.capitalizeFully(name) + brokenname.replace("{BLOCKS}", "1"));
 										}
-									} else {
-										String name = event.getPlayer().getItemInHand().getType().name().replace('_', ' ');
-										meta.setDisplayName(WordUtils.capitalizeFully(name) + before + 1);
 									}
 								}
 							}
 						} else {
-							List<String> lores = new ArrayList<String>();
-							lores.add(0, before + "1");
-							meta.setLore(lores);
-							if (config.getBoolean("blocksbrokenactionbar"))
-								Utils.sendActionBar(event.getPlayer(), before + "1");
+							meta.setLore(Arrays.asList(brokenmsg.replace("{BLOCKS}", "1")));
+							if (config.getBoolean("blocksbrokenactionbar", false)) Utils.sendActionBar(event.getPlayer(), brokenmsg.replace("{BLOCKS}", "1"));
 							if (!config.getString("blocksbrokenitemname", "").isEmpty()) {
-								before = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbrokenitemname"));
+								String brokenname = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbrokenitemname"));
 								if (meta.hasDisplayName()) {
-									if (meta.getDisplayName().matches("(.*)" + Pattern.quote(before) + "[0-9]+")) {
-										String name = meta.getDisplayName().substring(0, before.length());
-										meta.setDisplayName(name + before + 1);
-									} else {
-										meta.setDisplayName(meta.getDisplayName() + before + 1);
-									}
+									String namepattern = Pattern.quote(brokenname).replace(Pattern.quote("{BLOCKS}"), "[0-9]+");
+									Matcher match = Pattern.compile("(.*)" + namepattern).matcher(meta.getDisplayName());
+									if (match.find()) meta.setDisplayName(match.group(1) + brokenname.replace("{BLOCKS}", "1"));
+									else meta.setDisplayName(meta.getDisplayName() + brokenname.replace("{BLOCKS}", "1"));
 								} else {
 									String name = event.getPlayer().getItemInHand().getType().name().replace('_', ' ');
-									meta.setDisplayName(WordUtils.capitalizeFully(name) + before + 1);
+									meta.setDisplayName(WordUtils.capitalizeFully(name) + brokenname.replace("{BLOCKS}", "1"));
 								}
 							}
 						}

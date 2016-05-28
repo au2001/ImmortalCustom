@@ -17,10 +17,10 @@ autopickup: true
 
 # The autoupdater for ImmortalCustom
 autoupdater:
-  enabled: true # Enable or not the autoupdater for ImmortalCustomEt tu peux le vendre sur Spigot ça peut rapporter 
+  enabled: true # Enable or not the autoupdater for ImmortalCustom 
   # If it is disabled, it can still be used manually with /fortune update
-  download: false # Whether it should download the plugin when an update is available.
-  delay: -1 # The delay, in seconds, between each update check.
+  download: true # Whether it should download the plugin when an update is available.
+  delay: 900 # The delay, in seconds, between each update check.
   # Set to -1 to make it check only on server startup.
   admins: true # Whether it should warn admins when they login, or when an update is found an update is available
   # Permission needed: ImmortalCustom.autoupdater
@@ -28,7 +28,7 @@ autoupdater:
   url: 'http://au.wc.lt/plugins/ImmortalCustom.jar' # This shouldn't change, but it's the url to the plugin
   # The path to your ImmortalCustom jar file, that will be replaced when downloading an update.
   # Leave this empty for the plugin to guess the path (might not work).
-  path: ''
+  path: 'plugins/ImmortalCustom.jar'
 
 # If true, flames will appear when a block is smelted
 flames: true
@@ -55,9 +55,9 @@ fullmessage: '&3[&6ImmortalCustom&3] &2&lYour inventory is full!'
 # The message sent when a player tries to build and he doesn't have the permission
 nobuild: '&3[&6ImmortalCustom&3] &4Sorry, you cannot build here!'
 
-# If not empty, the text before the number of blocks broken
+# If not empty, the text to show the number of blocks broken
 # NOTE: If you change this, all the pickaxes already used will be broken
-blocksbroken: '&bBlocks Broken: &f'
+blocksbroken: '&bBlocks Broken: &f{BLOCKS}'
 
 # If the blocks broken are shown or not in the lore
 # NOTE: If you change this, all the pickaxes already used will be broken
@@ -67,18 +67,18 @@ blocksbrokenlore: true
 # NOTE: You can only use this if you have blocks broken lore active
 blocksbrokenactionbar: true
 
-# If not empty, the text before the number of blocks broken in item bame
+# If not empty, the text to show the number of blocks broken in item name
 # NOTE: If you change this, all the pickaxes already used will be broken
-blocksbrokenitemname: '&9 | Broken: &b'
+blocksbrokenitemname: '&9 [&b{BLOCKS}&9]'
 
 # The message when a player doesn't have permission for a command/action
 permission: '&cYou do not have the permissions to use this!'
 
 # The sound played when a player's inventory is full
-fullsound: 'NOTE_BASS_GUITAR 10 10'
+fullsound: 'BLOCK_NOTE_BASS 10 10'
 
 # The sound played when a player shift right clicks
-orestoblocksound: 'BURP 10 10'
+orestoblocksound: 'ENTITY_PLAYER_BURP 10 10'
 
 # What blocks are "smelted" in what blocks
 smelts:

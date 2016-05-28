@@ -107,7 +107,7 @@ public class Minebow implements Listener {
 							Block block = origin.getWorld().getBlockAt(x, y, z);
 							if (origin.distanceSquared(block.getLocation()) <= r*r && Utils.isActive(origin)) {
 								origin.getWorld().playEffect(block.getLocation(), Effect.EXPLOSION_LARGE, 1);
-								if (!block.getType().equals(Material.AIR))
+								if (!block.getType().equals(Material.AIR) && !block.getType().equals(Material.BEDROCK))
 									ImmortalCustom.breakBlock(new BlockBreakEvent(block, shooter));
 							}
 						}
