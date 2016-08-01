@@ -24,11 +24,12 @@ public abstract class ICBlockBreakListener {
 	public void onBlockBrokenUpdate (ICBlockBreakEvent event) {}
 	public boolean onDropDown (ICBlockBreakEvent event, ItemStack drop) { return true; }
 	public boolean onAutoPickup (ICBlockBreakEvent event, ItemStack drop) { return true; }
+	public boolean onFullInventory (ICBlockBreakEvent event, ItemStack drop) { return true; }
 	
 	public static class ICBlockBreakEvent extends BlockBreakEvent {
 
-		boolean tool, minebow, silktouch, smelted, fortuned, autopickup, full, dropdown, expdrop, itembreak;
-		ArrayList<ItemStack> drops = new ArrayList<ItemStack>();
+		public boolean tool, minebow, silktouch, smelted, fortuned, autopickup, full, dropdown, expdrop, itembreak;
+		public ArrayList<ItemStack> drops = new ArrayList<ItemStack>();
 		
 		public ICBlockBreakEvent (BlockBreakEvent event) {
 			this(event.getBlock(), event.getPlayer());
@@ -128,6 +129,18 @@ public abstract class ICBlockBreakListener {
 			for (ICBlockBreakListener listener : ICBlockBreakListener.listeners) {
 				try {
 					result = result && listener.onDropDown(this, drop);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			return result;
+		}
+		
+		public boolean onFullInventory (ItemStack drop) {
+			boolean result = true;
+			for (ICBlockBreakListener listener : ICBlockBreakListener.listeners) {
+				try {
+					result = result && listener.onFullInventory(this, drop);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

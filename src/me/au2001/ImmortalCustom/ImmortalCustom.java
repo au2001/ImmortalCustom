@@ -38,6 +38,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
@@ -84,7 +85,7 @@ public class ImmortalCustom extends JavaPlugin implements Listener {
 
 		AutoUpdate.start();
 	}
-	
+
 	public void onDisable () {
 		for (UUID user : Backpacks.opens.keySet()) {
 			Player player = Bukkit.getPlayer(user);
@@ -147,7 +148,6 @@ public class ImmortalCustom extends JavaPlugin implements Listener {
 
 		if (event.getPlayer().getGameMode().equals(GameMode.SURVIVAL)) {
 			if (event.getBlock().getWorld().getGameRuleValue("doTileDrops").equals("true")) {
-				FileConfiguration config = plugin.getConfig();
 				if (WG != null) {
 					WorldGuardPlugin api = (WorldGuardPlugin) WG;
 					Location loc = event.getBlock().getLocation();
@@ -158,61 +158,83 @@ public class ImmortalCustom extends JavaPlugin implements Listener {
 					}
 				}
 
-				ICBlockBreakEvent icevent = new ICBlockBreakEvent(event);
-				icevent.preBlockBreak();
-				if (event.isCancelled()) return true;
-				ItemStack hand = event.getPlayer().getItemInHand();
-				icevent.tool = (hand == null || hand.getType().equals(Material.AIR))? false : Enchantment.DURABILITY.canEnchantItem(hand);
-				icevent.tool = icevent.tool && !Enchantment.PROTECTION_ENVIRONMENTAL.canEnchantItem(hand) && !Enchantment.ARROW_INFINITE.canEnchantItem(hand);
-				icevent.drops.addAll(event.getBlock().getDrops(event.getPlayer().getItemInHand()));
-
-				if (Minebow.isBow(event.getPlayer().getItemInHand())) {
-					icevent.minebow = true;
-					icevent.drops.addAll(event.getBlock().getDrops());
-				}
-				if (event.getPlayer().getItemInHand().containsEnchantment(Enchantment.SILK_TOUCH)) {
-					icevent.silktouch = true;
-					icevent.drops.clear();
-					icevent.drops.add(new ItemStack(event.getBlock().getType(), 1, event.getBlock().getData()));
-					icevent.onSilkTouch();
-					if (icevent.isCancelled()) return true;
-				}
-
-				if (icevent.tool) {
-					ItemMeta meta = event.getPlayer().getItemInHand().getItemMeta();
-					if (config.getBoolean("blocksbrokenlore", false)) {
-						icevent.onBlockBrokenUpdate();
+				// new BukkitRunnable() {
+					// public void run() {
+						event.getPlayer().sendBlockChange(event.getBlock().getLocation(), Material.AIR, (byte) 0);
+						
+						FileConfiguration config = plugin.getConfig();
+						ICBlockBreakEvent icevent = new ICBlockBreakEvent(event);
+						icevent.preBlockBreak();
 						if (icevent.isCancelled()) return true;
-						String brokenmsg = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbroken"));
-						if (meta.hasLore()) {
-							String[] parts = brokenmsg.split(Pattern.quote("{BLOCKS}"));
-							Pattern pattern = Pattern.compile(Pattern.quote(parts[0]) + "([0-9]+)" + (parts.length > 1? Pattern.quote(parts[1]) : ""));
-							for (int i = meta.getLore().size()-1; i >= 0; i--) {
-								Matcher finder = pattern.matcher(meta.getLore().get(i));
-								if (finder.find()) {
-									List<String> lores = meta.getLore();
-									long blocks = Long.parseLong(finder.group(1)) + 1;
-									lores.set(i, brokenmsg.replace("{BLOCKS}", "" + blocks));
-									meta.setLore(lores);
-									if (config.getBoolean("blocksbrokenactionbar", false)) Utils.sendActionBar(event.getPlayer(), lores.get(i));
-									if (!config.getString("blocksbrokenitemname", "").isEmpty()) {
-										String brokenname = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbrokenitemname"));
-										if (meta.hasDisplayName()) {
-											String[] nameparts = brokenname.split(Pattern.quote("{BLOCKS}"));
-											String namepattern = Pattern.quote(nameparts[0]) + "[0-9]+" + (nameparts.length > 1? Pattern.quote(nameparts[1]) : "");
-											Matcher match = Pattern.compile("(.*)" + namepattern).matcher(meta.getDisplayName());
-											if (match.find()) meta.setDisplayName(match.group(1) + brokenname.replace("{BLOCKS}", "" + blocks));
-											else meta.setDisplayName(meta.getDisplayName() + brokenname.replace("{BLOCKS}", "" + blocks));
-										} else {
-											String name = event.getPlayer().getItemInHand().getType().name().replace('_', ' ');
-											meta.setDisplayName(WordUtils.capitalizeFully(name) + brokenname.replace("{BLOCKS}", "" + blocks));
+						ItemStack hand = event.getPlayer().getItemInHand();
+						icevent.tool = (hand == null || hand.getType().equals(Material.AIR))? false : Enchantment.DURABILITY.canEnchantItem(hand);
+						icevent.tool = icevent.tool && !Enchantment.PROTECTION_ENVIRONMENTAL.canEnchantItem(hand) && !Enchantment.ARROW_INFINITE.canEnchantItem(hand);
+						icevent.drops.addAll(event.getBlock().getDrops(event.getPlayer().getItemInHand()));
+
+						if (Minebow.isBow(event.getPlayer().getItemInHand())) {
+							icevent.minebow = true;
+							icevent.drops.addAll(event.getBlock().getDrops());
+						}
+						if (event.getPlayer().getItemInHand().containsEnchantment(Enchantment.SILK_TOUCH)) {
+							icevent.silktouch = true;
+							icevent.drops.clear();
+							icevent.drops.add(new ItemStack(event.getBlock().getType(), 1, event.getBlock().getData()));
+							icevent.onSilkTouch();
+							if (icevent.isCancelled()) return true;
+						}
+						
+						if (icevent.tool) {
+							ItemMeta meta = event.getPlayer().getItemInHand().getItemMeta();
+							if (config.getBoolean("blocksbrokenlore", false)) {
+								icevent.onBlockBrokenUpdate();
+								if (icevent.isCancelled()) return true;
+								String brokenmsg = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbroken"));
+								if (meta.hasLore()) {
+									String[] parts = brokenmsg.split(Pattern.quote("{BLOCKS}"));
+									Pattern pattern = Pattern.compile(Pattern.quote(parts[0]) + "([0-9]+)" + (parts.length > 1? Pattern.quote(parts[1]) : ""));
+									for (int i = meta.getLore().size()-1; i >= 0; i--) {
+										Matcher finder = pattern.matcher(meta.getLore().get(i));
+										if (finder.find()) {
+											List<String> lores = meta.getLore();
+											long blocks = Long.parseLong(finder.group(1)) + 1;
+											lores.set(i, brokenmsg.replace("{BLOCKS}", "" + blocks));
+											meta.setLore(lores);
+											if (config.getBoolean("blocksbrokenactionbar", false)) Utils.sendActionBar(event.getPlayer(), lores.get(i));
+											if (!config.getString("blocksbrokenitemname", "").isEmpty()) {
+												String brokenname = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbrokenitemname"));
+												if (meta.hasDisplayName()) {
+													String[] nameparts = brokenname.split(Pattern.quote("{BLOCKS}"));
+													String namepattern = Pattern.quote(nameparts[0]) + "[0-9]+" + (nameparts.length > 1? Pattern.quote(nameparts[1]) : "");
+													Matcher match = Pattern.compile("(.*)" + namepattern).matcher(meta.getDisplayName());
+													if (match.find()) meta.setDisplayName(match.group(1) + brokenname.replace("{BLOCKS}", "" + blocks));
+													else meta.setDisplayName(meta.getDisplayName() + brokenname.replace("{BLOCKS}", "" + blocks));
+												} else {
+													String name = event.getPlayer().getItemInHand().getType().name().replace('_', ' ');
+													meta.setDisplayName(WordUtils.capitalizeFully(name) + brokenname.replace("{BLOCKS}", "" + blocks));
+												}
+											}
+											break;
+										} else if (i == 0) {
+											List<String> lores = meta.getLore();
+											lores.add(i, brokenmsg.replace("{BLOCKS}", "1"));
+											meta.setLore(lores);
+											if (config.getBoolean("blocksbrokenactionbar", false)) Utils.sendActionBar(event.getPlayer(), brokenmsg.replace("{BLOCKS}", "1"));
+											if (!config.getString("blocksbrokenitemname", "").isEmpty()) {
+												String brokenname = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbrokenitemname"));
+												if (meta.hasDisplayName()) {
+													String namepattern = Pattern.quote(brokenname).replace(Pattern.quote("{BLOCKS}"), "[0-9]+");
+													Matcher match = Pattern.compile("(.*)" + namepattern).matcher(meta.getDisplayName());
+													if (match.find()) meta.setDisplayName(match.group(1) + brokenname.replace("{BLOCKS}", "1"));
+													else meta.setDisplayName(meta.getDisplayName() + brokenname.replace("{BLOCKS}", "1"));
+												} else {
+													String name = event.getPlayer().getItemInHand().getType().name().replace('_', ' ');
+													meta.setDisplayName(WordUtils.capitalizeFully(name) + brokenname.replace("{BLOCKS}", "1"));
+												}
+											}
 										}
 									}
-									break;
-								} else if (i == 0) {
-									List<String> lores = meta.getLore();
-									lores.add(i, brokenmsg.replace("{BLOCKS}", "1"));
-									meta.setLore(lores);
+								} else {
+									meta.setLore(Arrays.asList(brokenmsg.replace("{BLOCKS}", "1")));
 									if (config.getBoolean("blocksbrokenactionbar", false)) Utils.sendActionBar(event.getPlayer(), brokenmsg.replace("{BLOCKS}", "1"));
 									if (!config.getString("blocksbrokenitemname", "").isEmpty()) {
 										String brokenname = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbrokenitemname"));
@@ -227,144 +249,138 @@ public class ImmortalCustom extends JavaPlugin implements Listener {
 										}
 									}
 								}
-							}
-						} else {
-							meta.setLore(Arrays.asList(brokenmsg.replace("{BLOCKS}", "1")));
-							if (config.getBoolean("blocksbrokenactionbar", false)) Utils.sendActionBar(event.getPlayer(), brokenmsg.replace("{BLOCKS}", "1"));
-							if (!config.getString("blocksbrokenitemname", "").isEmpty()) {
-								String brokenname = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbrokenitemname"));
+							} else if (!config.getString("blocksbrokenitemname", "").isEmpty()) {
+								String before = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbrokenitemname"));
 								if (meta.hasDisplayName()) {
-									String namepattern = Pattern.quote(brokenname).replace(Pattern.quote("{BLOCKS}"), "[0-9]+");
-									Matcher match = Pattern.compile("(.*)" + namepattern).matcher(meta.getDisplayName());
-									if (match.find()) meta.setDisplayName(match.group(1) + brokenname.replace("{BLOCKS}", "1"));
-									else meta.setDisplayName(meta.getDisplayName() + brokenname.replace("{BLOCKS}", "1"));
+									if (meta.getDisplayName().matches("(.*)" + Pattern.quote(before) + "[0-9]+")) {
+										String name = meta.getDisplayName().substring(0, before.length());
+										String number = meta.getDisplayName().substring(before.length());
+										meta.setDisplayName(name + before + (Long.parseLong(number)+1));
+									} else {
+										meta.setDisplayName(meta.getDisplayName() + before + 1);
+									}
 								} else {
 									String name = event.getPlayer().getItemInHand().getType().name().replace('_', ' ');
-									meta.setDisplayName(WordUtils.capitalizeFully(name) + brokenname.replace("{BLOCKS}", "1"));
+									meta.setDisplayName(WordUtils.capitalizeFully(name) + before + 1);
 								}
 							}
+							event.getPlayer().getItemInHand().setItemMeta(meta);
 						}
-					} else if (!config.getString("blocksbrokenitemname", "").isEmpty()) {
-						String before = ChatColor.translateAlternateColorCodes('&', config.getString("blocksbrokenitemname"));
-						if (meta.hasDisplayName()) {
-							if (meta.getDisplayName().matches("(.*)" + Pattern.quote(before) + "[0-9]+")) {
-								String name = meta.getDisplayName().substring(0, before.length());
-								String number = meta.getDisplayName().substring(before.length());
-								meta.setDisplayName(name + before + (Long.parseLong(number)+1));
-							} else {
-								meta.setDisplayName(meta.getDisplayName() + before + 1);
+						int fortune = 0;
+						if (event.getPlayer().getItemInHand().containsEnchantment(Enchantment.LOOT_BONUS_BLOCKS))
+							fortune = event.getPlayer().getItemInHand().getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS);
+						if (fortune >= config.getInt("smeltFortune") && (event.getPlayer().hasPermission("ImmortalCustom.autosmelt") || event.getPlayer().hasPermission("ic.autosmelt"))) {
+							icevent.smelted = true;
+							for (ItemStack drop : icevent.drops) {
+								if (config.isSet("smelts." + drop.getType().toString())) {
+									ItemStack newdrop = new ItemStack(Material.getMaterial(config.getString("smelts." + drop.getType().toString())), drop.getAmount());
+									icevent.drops.set(icevent.drops.indexOf(drop), newdrop);
+									event.setExpToDrop(event.getExpToDrop() + 10);
+									if (config.getBoolean("flames"))
+										event.getBlock().getWorld().playEffect(event.getBlock().getLocation().add(0.5, 1, 0.5), Effect.MOBSPAWNER_FLAMES, 0);
+								}
 							}
-						} else {
-							String name = event.getPlayer().getItemInHand().getType().name().replace('_', ' ');
-							meta.setDisplayName(WordUtils.capitalizeFully(name) + before + 1);
-						}
-					}
-					event.getPlayer().getItemInHand().setItemMeta(meta);
-				}
-				int fortune = 0;
-				if (event.getPlayer().getItemInHand().containsEnchantment(Enchantment.LOOT_BONUS_BLOCKS))
-					fortune = event.getPlayer().getItemInHand().getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS);
-				if (fortune >= config.getInt("smeltFortune") && (event.getPlayer().hasPermission("ImmortalCustom.autosmelt") || event.getPlayer().hasPermission("ic.autosmelt"))) {
-					icevent.smelted = true;
-					for (ItemStack drop : icevent.drops) {
-						if (config.isSet("smelts." + drop.getType().toString())) {
-							ItemStack newdrop = new ItemStack(Material.getMaterial(config.getString("smelts." + drop.getType().toString())), drop.getAmount());
-							icevent.drops.set(icevent.drops.indexOf(drop), newdrop);
-							event.setExpToDrop(event.getExpToDrop() + 10);
-							if (config.getBoolean("flames"))
-								event.getBlock().getWorld().playEffect(event.getBlock().getLocation().add(0.5, 1, 0.5), Effect.MOBSPAWNER_FLAMES, 0);
-						}
-					}
-					icevent.onAutoSmelt();
-					if (icevent.isCancelled()) return true;
-				}
-				if (fortune > 0 && (event.getPlayer().hasPermission("ImmortalCustom.fortune") || event.getPlayer().hasPermission("ic.fortune"))) {
-					icevent.fortuned = true;
-					double multiplier = 1;
-					for (String rank : config.getConfigurationSection("multipliers").getValues(false).keySet())
-						if (config.getDouble("multipliers." + rank) > multiplier)
-							if (event.getPlayer().hasPermission("ImmortalCustom.multiplier." + rank) || event.getPlayer().hasPermission("ic.multiplier." + rank))
-								multiplier = config.getDouble("multipliers." + rank);
-					int loots = (int) (fortune * config.getDouble("multiplier") * multiplier + 1);
-					for (ItemStack drop : icevent.drops) {
-						if (config.getStringList("fortuneBlocks").contains(drop.getType().toString()) || !config.getBoolean("fortunelist")) {
-							int rand = (config.getInt("difference") > 0)? new Random().nextInt(config.getInt("difference")) : 0;
-							if (new Random().nextBoolean() || drop.getAmount() <= config.getInt("difference")) {
-								ItemStack newdrop = drop;
-								drop.setAmount((drop.getAmount() * loots)+rand);
-								icevent.drops.set(icevent.drops.indexOf(drop), newdrop);
-							} else {
-								ItemStack newdrop = drop;
-								drop.setAmount((drop.getAmount() * loots)-rand);
-								icevent.drops.set(icevent.drops.indexOf(drop), newdrop);
-							}
-						}
-					}
-					icevent.onBlockFortune();
-					if (icevent.isCancelled()) return true;
-				}
-				for (ItemStack drop : icevent.drops) {
-					if (config.getStringList("pickupBlocks").contains(drop.getType().toString()) || !config.getBoolean("pickuplist")) {
-						if (icevent.onDropDown(drop)) {
+							icevent.onAutoSmelt();
 							if (icevent.isCancelled()) return true;
-							if ((event.getPlayer().hasPermission("ImmortalCustom.autopickup") || event.getPlayer().hasPermission("ic.autopickup")) && config.getBoolean("autopickup")) {
-								if (icevent.isCancelled()) return true;
-								icevent.autopickup = true;
-								Collection<ItemStack> dropp = event.getPlayer().getInventory().addItem(drop).values();
-								List<ItemStack> rest = new ArrayList<ItemStack>();
-								if (event.getPlayer().hasPermission("ImmortalCustom.backpack.autopickup") || event.getPlayer().hasPermission("ic.backpack.autopickup")) {
-									for (ItemStack item : dropp) rest.add(Backpacks.giveItem(event.getPlayer().getUniqueId(), item));
-									rest.remove(null);
-								} else {
-									rest.addAll(dropp);
-								}
-								if (rest != null && !rest.isEmpty()) {
-									icevent.full = true;
-									String[] conf = config.getString("fullsound").split(" ");
-									event.getPlayer().playSound(event.getPlayer().getEyeLocation(), Sound.valueOf(conf[0]), Integer.parseInt(conf[1]), Integer.parseInt(conf[2]));
-									if (!config.getString("fullmessage").isEmpty())
-										Utils.sendActionBar(event.getPlayer(), ChatColor.translateAlternateColorCodes('&', config.getString("fullmessage")));
-									if (icevent.onDropDown(drop) && (event.getPlayer().hasPermission("ImmortalCustom.dropdown") || event.getPlayer().hasPermission("ic.dropdown")) && config.getBoolean("dropdown")) {
-										if (icevent.isCancelled()) return true;
-										icevent.dropdown = true;
-										for (ItemStack item : rest) event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), item);
-									} else if (icevent.isCancelled()) return true;
-								}
-								if (icevent.isCancelled()) return true;
-							} else event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), drop);
 						}
-					} else if (icevent.onDropDown(drop)) {
-						event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), drop);
-						if (icevent.isCancelled()) return true;
-					} else if (icevent.isCancelled()) return true;
-				}
-				if (event.getExpToDrop() > 0) {
-					icevent.expdrop = true;
-					if ((event.getPlayer().hasPermission("ImmortalCustom.autopickup") || event.getPlayer().hasPermission("ic.autopickup")) && config.getBoolean("autopickup"))
-						event.getPlayer().giveExp(event.getExpToDrop());
-					else event.getBlock().getWorld().spawn(event.getBlock().getLocation(), ExperienceOrb.class).setExperience(event.getExpToDrop());
-				}
-				event.getBlock().setType(Material.AIR);
-				event.getBlock().getWorld().playEffect(event.getBlock().getLocation(), Effect.STEP_SOUND, event.getBlock().getType(), 1);
+						if (fortune > 0 && (event.getPlayer().hasPermission("ImmortalCustom.fortune") || event.getPlayer().hasPermission("ic.fortune"))) {
+							icevent.fortuned = true;
+							double multiplier = 1;
+							for (String rank : config.getConfigurationSection("multipliers").getValues(false).keySet())
+								if (config.getDouble("multipliers." + rank) > multiplier)
+									if (event.getPlayer().hasPermission("ImmortalCustom.multiplier." + rank) || event.getPlayer().hasPermission("ic.multiplier." + rank))
+										multiplier = config.getDouble("multipliers." + rank);
+							int loots = (int) (fortune * config.getDouble("multiplier") * multiplier + 1);
+							for (ItemStack drop : icevent.drops) {
+								if (config.getStringList("fortuneBlocks").contains(drop.getType().toString()) || !config.getBoolean("fortunelist")) {
+									int rand = (config.getInt("difference") > 0)? new Random().nextInt(config.getInt("difference")) : 0;
+									if (new Random().nextBoolean() || drop.getAmount() <= config.getInt("difference")) {
+										ItemStack newdrop = drop;
+										drop.setAmount((drop.getAmount() * loots)+rand);
+										icevent.drops.set(icevent.drops.indexOf(drop), newdrop);
+									} else {
+										ItemStack newdrop = drop;
+										drop.setAmount((drop.getAmount() * loots)-rand);
+										icevent.drops.set(icevent.drops.indexOf(drop), newdrop);
+									}
+								}
+							}
+							icevent.onBlockFortune();
+							if (icevent.isCancelled()) return true;
+						}
+						for (ItemStack drop : icevent.drops.toArray(new ItemStack[icevent.drops.size()])) {
+							if (config.getStringList("pickupBlocks").contains(drop.getType().toString()) || !config.getBoolean("pickuplist")) {
+								if ((event.getPlayer().hasPermission("ImmortalCustom.autopickup") || event.getPlayer().hasPermission("ic.autopickup")) && config.getBoolean("autopickup")) {
+									if (icevent.onAutoPickup(drop)) {
+										if (icevent.isCancelled()) return true;
+										icevent.autopickup = true;
+										Collection<ItemStack> dropp = event.getPlayer().getInventory().addItem(drop).values();
+										List<ItemStack> rest = new ArrayList<ItemStack>();
+										if (event.getPlayer().hasPermission("ImmortalCustom.backpack.autopickup") || event.getPlayer().hasPermission("ic.backpack.autopickup")) {
+											for (ItemStack item : dropp) rest.add(Backpacks.giveItem(event.getPlayer().getUniqueId(), item));
+											rest.remove(null);
+										} else {
+											rest.addAll(dropp);
+										}
+										if (rest != null && !rest.isEmpty() && icevent.onFullInventory(drop)) {
+											icevent.full = true;
+											if ((event.getPlayer().hasPermission("ImmortalCustom.dropdown") || event.getPlayer().hasPermission("ic.dropdown")) && config.getBoolean("dropdown")) {
+												if (icevent.onDropDown(drop)) {
+													if (icevent.isCancelled()) return true;
+													icevent.dropdown = true;
+													for (ItemStack item : rest) event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), item);
+												}
+											} else {
+												String[] conf = config.getString("fullsound").split(" ");
+												event.getPlayer().playSound(event.getPlayer().getEyeLocation(), Sound.valueOf(conf[0]), Integer.parseInt(conf[1]), Integer.parseInt(conf[2]));
+												if (!config.getString("fullmessage").isEmpty())
+													Utils.sendActionBar(event.getPlayer(), ChatColor.translateAlternateColorCodes('&', config.getString("fullmessage")));
+											}
+										}
+									}
+								} else if (icevent.onDropDown(drop)) {
+									if (icevent.isCancelled()) return true;
+									event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), drop);
+								}
+							} else if (icevent.onDropDown(drop)) {
+								if (icevent.isCancelled()) return true;
+								event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), drop);
+							}
+							if (icevent.isCancelled()) return true;
+						}
+						if (event.getExpToDrop() > 0) {
+							icevent.expdrop = true;
+							if ((event.getPlayer().hasPermission("ImmortalCustom.autopickup") || event.getPlayer().hasPermission("ic.autopickup")) && config.getBoolean("autopickup"))
+								event.getPlayer().giveExp(event.getExpToDrop());
+							else event.getBlock().getWorld().spawn(event.getBlock().getLocation(), ExperienceOrb.class).setExperience(event.getExpToDrop());
+						}
+						new BukkitRunnable() {
+							public void run() {
+								event.getBlock().setType(Material.AIR);
+							}
+						}.runTask(plugin);
+						event.getBlock().getWorld().playEffect(event.getBlock().getLocation(), Effect.STEP_SOUND, event.getBlock().getType(), 1);
+						if (icevent.tool) {
+							ItemStack item = event.getPlayer().getItemInHand();
+							if (!item.containsEnchantment(Enchantment.DURABILITY))
+								item.setDurability((short) (item.getDurability()+1));
+							else if (new Random().nextInt(item.getEnchantmentLevel(Enchantment.DURABILITY)) == 0)
+								item.setDurability((short) (item.getDurability()+1));
+							if (item.getDurability() >= item.getType().getMaxDurability()) {
+								icevent.itembreak = true;
+								Bukkit.getPluginManager().callEvent(new PlayerItemBreakEvent(event.getPlayer(), item));
+								item.setType(Material.AIR);
+								icevent.onItemBreak();
+								if (icevent.isCancelled()) return true;
+							}
+							event.getPlayer().setItemInHand(item);
+							event.getPlayer().updateInventory();
+						}
+						if (EZB != null) ((EZBlocks) EZB).getBreakHandler().handleBlockBreakEvent(event.getPlayer(), event.getBlock());
+						icevent.onBlockBreak();
+					// }
+				// }.runTaskAsynchronously(plugin);
 				event.setCancelled(true);
-				if (icevent.tool) {
-					ItemStack item = event.getPlayer().getItemInHand();
-					if (!item.containsEnchantment(Enchantment.DURABILITY))
-						item.setDurability((short) (item.getDurability()+1));
-					else if (new Random().nextInt(item.getEnchantmentLevel(Enchantment.DURABILITY)) == 0)
-						item.setDurability((short) (item.getDurability()+1));
-					if (item.getDurability() >= item.getType().getMaxDurability()) {
-						icevent.itembreak = true;
-						Bukkit.getPluginManager().callEvent(new PlayerItemBreakEvent(event.getPlayer(), item));
-						item.setType(Material.AIR);
-						icevent.onItemBreak();
-						if (icevent.isCancelled()) return true;
-					}
-					event.getPlayer().setItemInHand(item);
-					event.getPlayer().updateInventory();
-				}
-				if (EZB != null) ((EZBlocks) EZB).getBreakHandler().handleBlockBreakEvent(event.getPlayer(), event.getBlock());
-				icevent.onBlockBreak();
 			}
 		}
 		return true;

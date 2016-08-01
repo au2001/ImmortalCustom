@@ -1,6 +1,6 @@
 name: ImmortalCustom
 main: me.au2001.ImmortalCustom.ImmortalCustom
-version: 1.5.2
+version: 1.5.3
 description: Enchant fortune at the level you want and smelts your ores!
 softdepend: [WorldEdit, WorldGuard, EZBlocks]
 commands: 
