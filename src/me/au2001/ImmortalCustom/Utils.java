@@ -1,17 +1,5 @@
 package me.au2001.ImmortalCustom;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -26,11 +14,20 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+
 public class Utils {
 	private Class<?> packetTitle;
 	private Class<?> packetActions;
 	private Class<?> nmsChatSerializer;
 	private Class<?> chatBaseComponent;
+	private Class<?> chatMessageType;
 	private String title = "";
 	private ChatColor titleColor = ChatColor.WHITE;
 	private String subtitle = "";
@@ -119,6 +116,7 @@ public class Utils {
 		chatBaseComponent = getNMSClass("IChatBaseComponent");
 		nmsChatSerializer = getNMSClass("IChatBaseComponent$ChatSerializer");
 		if (nmsChatSerializer == null) nmsChatSerializer = getNMSClass("ChatSerializer");
+		chatMessageType = getNMSClass("ChatMessageType");
 	}
 
 	/**
@@ -397,7 +395,13 @@ public class Utils {
 			Class<?> actionPacket = title.getNMSClass("PacketPlayOutChat");
 			message = "{\"text\":\"" + ChatColor.translateAlternateColorCodes('&', message) + "\"}";
 			Object serialized = title.getMethod(title.nmsChatSerializer, "a", String.class).invoke(null, message);
-			Object packet = actionPacket.getConstructor(title.chatBaseComponent, byte.class).newInstance(serialized, (byte) 2);
+			Object packet;
+			try {
+				packet = actionPacket.getConstructor(title.chatBaseComponent, byte.class).newInstance(serialized, (byte) 2);
+			} catch (Exception e) {
+				Object actionBarType = title.chatMessageType.getDeclaredField("GAME_INFO").get(null);
+				packet = actionPacket.getConstructor(title.chatBaseComponent, title.chatMessageType).newInstance(serialized, actionBarType);
+			}
 			sendPacket.invoke(connection, packet);
 		} catch (Exception e) {
 			e.printStackTrace();
